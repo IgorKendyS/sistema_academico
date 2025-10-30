@@ -51,6 +51,9 @@ def handle_request(request):
     elif acao == "criar_turma":
         return turmas.criar_turma(request.get("dados"))
     elif acao == "listar_turmas":
+        if request.get("reset", False):
+            turmas.TURMAS.clear()
+            turmas.proximo_id_turma = 1
         return turmas.listar_turmas(request.get("ordenar_por_id", False))
     elif acao == "atualizar_turma":
         return turmas.atualizar_turma(request.get("id"), request.get("dados"))
@@ -98,10 +101,6 @@ def main():
     """
     Função principal para iniciar o servidor.
     """
-    # Reinicia os dados das turmas para teste
-    turmas.TURMAS.clear()
-    turmas.proximo_id_turma = 1
-
     host = "0.0.0.0"  # Escuta em todas as interfaces de rede
     port = 9998
 
