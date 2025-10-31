@@ -1,107 +1,90 @@
 from .ordenacao import sort_int_array
-
-# Lista para armazenar as turmas em memória
-TURMAS = []
-
-# Contador para gerar IDs únicos para as turmas
-proximo_id_turma = 1
+from .. import database
 
 def criar_turma(dados_turma):
     """
-    Cria uma nova turma e a adiciona à lista de turmas.
-
-    Args:
-        dados_turma (dict): Dicionário com os dados da turma (nome, professor, etc.).
-
-    Returns:
-        dict: Dicionário com o status da operação e os dados da turma criada.
+    Cria uma nova turma e a insere no banco de dados.
     """
-    global proximo_id_turma
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO turmas (nome, professor) VALUES (?, ?)", 
+                   (dados_turma.get("nome"), dados_turma.get("professor")))
+    conn.commit()
+    novo_id = cursor.lastrowid
+    conn.close()
     
-    novo_id = dados_turma.get("id", proximo_id_turma)
-
     nova_turma = {
         "id": novo_id,
         "nome": dados_turma.get("nome"),
         "professor": dados_turma.get("professor")
     }
     
-    TURMAS.append(nova_turma)
-    if novo_id >= proximo_id_turma:
-        proximo_id_turma = novo_id + 1
-    
     return {"status": "ok", "turma": nova_turma}
 
 def listar_turmas(ordenar_por_id=False):
     """
-    Retorna a lista de todas as turmas cadastradas.
-
-    Args:
-        ordenar_por_id (bool): Se True, ordena a lista de turmas por ID.
-
-    Returns:
-        dict: Dicionário com o status da operação e a lista de turmas.
+    Retorna a lista de todas as turmas cadastradas no banco de dados.
     """
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM turmas")
+    turmas_db = cursor.fetchall()
+    conn.close()
+
+    turmas = [dict(row) for row in turmas_db]
+
     if ordenar_por_id:
-        print(f"TURMAS antes da ordenação: {TURMAS}")
-        ids = [turma["id"] for turma in TURMAS]
-        print(f"IDs: {ids}")
+        ids = [turma["id"] for turma in turmas]
         sorted_ids = sort_int_array(ids)
-        print(f"IDs ordenados: {sorted_ids}")
-        turmas_map = {turma["id"]: turma for turma in TURMAS}
-        print(f"Mapa de turmas: {turmas_map}")
+        turmas_map = {turma["id"]: turma for turma in turmas}
         sorted_turmas = [turmas_map[id] for id in sorted_ids]
-        print(f"Turmas ordenadas: {sorted_turmas}")
         return {"status": "ok", "turmas": sorted_turmas}
     else:
-        return {"status": "ok", "turmas": TURMAS}
+        return {"status": "ok", "turmas": turmas}
 
 def buscar_turma(id_turma):
     """
-    Busca uma turma pelo seu ID.
-
-    Args:
-        id_turma (int): ID da turma a ser buscada.
-
-    Returns:
-        dict or None: Dicionário com os dados da turma se encontrada, senão None.
+    Busca uma turma pelo seu ID no banco de dados.
     """
-    for turma in TURMAS:
-        if turma["id"] == id_turma:
-            return turma
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM turmas WHERE id = ?", (id_turma,))
+    turma_db = cursor.fetchone()
+    conn.close()
+    
+    if turma_db:
+        return dict(turma_db)
     return None
 
 def atualizar_turma(id_turma, dados_turma):
     """
-    Atualiza os dados de uma turma.
-
-    Args:
-        id_turma (int): ID da turma a ser atualizada.
-        dados_turma (dict): Dicionário com os novos dados da turma.
-
-    Returns:
-        dict: Dicionário com o status da operação.
+    Atualiza os dados de uma turma no banco de dados.
     """
-    turma = buscar_turma(id_turma)
-    if turma:
-        turma.update(dados_turma)
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE turmas SET nome = ?, professor = ? WHERE id = ?", 
+                   (dados_turma.get("nome"), dados_turma.get("professor"), id_turma))
+    conn.commit()
+    updated_rows = cursor.rowcount
+    conn.close()
+    
+    if updated_rows > 0:
         return {"status": "ok", "message": "Turma atualizada com sucesso."}
     else:
         return {"status": "erro", "message": "Turma não encontrada."}
 
 def remover_turma(id_turma):
     """
-    Remove uma turma da lista.
-
-    Args:
-        id_turma (int): ID da turma a ser removida.
-
-    Returns:
-        dict: Dicionário com o status da operação.
+    Remove uma turma do banco de dados.
     """
-    turma = buscar_turma(id_turma)
-    if turma:
-        TURMAS.remove(turma)
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM turmas WHERE id = ?", (id_turma,))
+    conn.commit()
+    deleted_rows = cursor.rowcount
+    conn.close()
+    
+    if deleted_rows > 0:
         return {"status": "ok", "message": "Turma removida com sucesso."}
     else:
         return {"status": "erro", "message": "Turma não encontrada."}

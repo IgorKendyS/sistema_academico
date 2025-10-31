@@ -1,42 +1,35 @@
-# Lista para armazenar as aulas em memória
-AULAS = []
-
-# Contador para gerar IDs únicos para as aulas
-proximo_id_aula = 1
+from .. import database
 
 def registrar_aula(dados_aula):
     """
-    Registra uma nova aula e a adiciona à lista de aulas.
-
-    Args:
-        dados_aula (dict): Dicionário com os dados da aula (id_turma, conteudo, etc.).
-
-    Returns:
-        dict: Dicionário com o status da operação e os dados da aula registrada.
+    Registra uma nova aula no banco de dados.
     """
-    global proximo_id_aula
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO aulas (id_turma, data, topico) VALUES (?, ?, ?)", 
+                   (dados_aula.get("id_turma"), dados_aula.get("data"), dados_aula.get("topico")))
+    conn.commit()
+    novo_id = cursor.lastrowid
+    conn.close()
     
     nova_aula = {
-        "id": proximo_id_aula,
+        "id": novo_id,
         "id_turma": dados_aula.get("id_turma"),
-        "conteudo": dados_aula.get("conteudo"),
-        "data": dados_aula.get("data")
+        "data": dados_aula.get("data"),
+        "topico": dados_aula.get("topico")
     }
-    
-    AULAS.append(nova_aula)
-    proximo_id_aula += 1
     
     return {"status": "ok", "aula": nova_aula}
 
 def listar_aulas_turma(id_turma):
     """
     Retorna a lista de todas as aulas de uma determinada turma.
-
-    Args:
-        id_turma (int): ID da turma.
-
-    Returns:
-        dict: Dicionário com o status da operação e a lista de aulas.
     """
-    aulas_turma = [aula for aula in AULAS if aula["id_turma"] == id_turma]
-    return {"status": "ok", "aulas": aulas_turma}
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM aulas WHERE id_turma = ?", (id_turma,))
+    aulas_db = cursor.fetchall()
+    conn.close()
+
+    aulas = [dict(row) for row in aulas_db]
+    return {"status": "ok", "aulas": aulas}

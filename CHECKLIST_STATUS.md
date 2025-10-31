@@ -38,20 +38,23 @@
     *   Compilação do C para `c_module/modulos.so`.
     *   `servidor/modulos/ordenacao.py` criado com `ctypes` para interface com C.
     *   Integração da ordenação em C na função `listar_turmas`.
+*   **Testar de onde parou:**
+    *   Verificado se a ordenação está funcionando. O problema era que `proximo_id_turma` não estava sendo resetado entre os testes. A solução foi adicionar uma chamada para resetar os dados no início dos testes.
 
 ### ⏳ A Fazer (To Do):
 
-*   **Testar de onde parou:**
-    *   Verificar se a ordenação está funcionando, pois tinha erro "Sorting's broken. proximo_id_turma isn't resetting. I'll import the turmas module in main.py and reset the variables there.".
 *   **Módulo de Relatórios:**
-    *   Geração de relatórios com algoritmos de busca e ordenação (Python pode gerar arquivos `.csv` ou `.pdf`).
+    *   Criação do módulo de relatórios.
+    *   Geração de relatório de alunos em CSV.
+    *   Geração de relatório de turmas em CSV, ordenado por nome.
 *   **Persistência de Dados:**
-    *   Substituir listas em memória por um banco de dados (SQLite ou MySQL).
+    *   Substituído listas em memória por um banco de dados SQLite.
+    *   Refatorados os módulos de turmas, alunos, usuários, aulas e atividades para usar o banco de dados.
 *   **Segurança:**
-    *   Implementar controle de acesso por tipo de usuário (administrador, professor, aluno) para todas as ações.
-    *   Gerenciamento de sessões (timeout, encerramento limpo).
+    *   Implementado controle de acesso por tipo de usuário (administrador, professor, aluno) para todas as ações.
+    *   Implementado gerenciamento de sessões com timeout.
 *   **Interface do Cliente:**
-    *   Desenvolver uma interface mais robusta (CLI interativa ou GUI com Tkinter/PyQt).
+    *   Desenvolvida uma interface de linha de comando (CLI) interativa.
 *   **Testes:**
     *   Testes unitários mais abrangentes (`unittest` ou `pytest`).
     *   Testes de rede (simulação com dois PCs ou VMs).

@@ -1,21 +1,7 @@
 import hashlib
+from .. import database
 
-# Dicionário para armazenar usuários e senhas (substituir por um banco de dados em produção)
-# As senhas devem ser armazenadas como hashes SHA256
-USUARIOS = {
-    "admin": {
-        "senha": hashlib.sha256("admin123".encode()).hexdigest(),
-        "perfil": "administrador"
-    },
-    "professor": {
-        "senha": hashlib.sha256("prof123".encode()).hexdigest(),
-        "perfil": "professor"
-    },
-    "aluno": {
-        "senha": hashlib.sha256("aluno123".encode()).hexdigest(),
-        "perfil": "aluno"
-    }
-}
+# TODO: Hash passwords before storing them in the database.
 
 def autenticar_usuario(usuario, senha):
     """
@@ -28,9 +14,14 @@ def autenticar_usuario(usuario, senha):
     Returns:
         dict: Um dicionário com o status da autenticação e o perfil do usuário se for bem-sucedido.
     """
-    senha_hash = hashlib.sha256(senha.encode()).hexdigest()
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
     
-    if usuario in USUARIOS and USUARIOS[usuario]["senha"] == senha_hash:
-        return {"autenticado": True, "perfil": USUARIOS[usuario]["perfil"]}
+    cursor.execute("SELECT * FROM usuarios WHERE usuario = ? AND senha = ?", (usuario, senha))
+    user_db = cursor.fetchone()
+    conn.close()
+    
+    if user_db:
+        return {"autenticado": True, "perfil": user_db["perfil"]}
     else:
         return {"autenticado": False, "perfil": None}

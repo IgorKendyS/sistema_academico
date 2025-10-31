@@ -1,6 +1,7 @@
 import socket
 import threading
 import json
+import time
 from .modulos.usuarios import autenticar_usuario
 from .modulos import turmas
 from .modulos.alunos import (
@@ -12,23 +13,37 @@ from .modulos.aulas import (
 from .modulos.atividades import (
     enviar_atividade, listar_atividades_turma, baixar_atividade
 )
+from .modulos import relatorios
+from . import database
+from . import auth
+
+import time
+
+TIMEOUT = 600 # 10 minutos
 
 def handle_client(client_socket, addr):
     """
     Função para lidar com a conexão de um cliente.
     """
     print(f"[NOVA CONEXÃO] {addr} conectado.", flush=True)
+    session = {"perfil": None, "last_activity": time.time()} # Inicializa a sessão
 
     try:
         while True:
+            if time.time() - session["last_activity"] > TIMEOUT:
+                print(f"[TIMEOUT] {addr} desconectado por inatividade.", flush=True)
+                break
+
             data = client_socket.recv(1024)
             if not data:
                 break
             
+            session["last_activity"] = time.time() # Atualiza a atividade
+            
             message = json.loads(data.decode('utf-8'))
             print(f"[{addr}] Mensagem JSON recebida: {message}", flush=True)
 
-            response = handle_request(message)
+            response = handle_request(message, session)
             client_socket.send(json.dumps(response).encode('utf-8'))
     
     except ConnectionResetError:
@@ -40,20 +55,26 @@ def handle_client(client_socket, addr):
         print(f"[FIM DA CONEXÃO] {addr} desconectado.", flush=True)
         client_socket.close()
 
-def handle_request(request):
+def handle_request(request, session):
     """
     Processa a requisição do cliente e retorna uma resposta.
     """
     acao = request.get("acao")
+    perfil = session.get("perfil")
+
     if acao == "login":
-        return login(request)
+        return login(request, session)
+
+    if not perfil:
+        return {"status": "erro", "message": "Usuário não autenticado."}
+
+    if perfil not in auth.PERMISSOES.get(acao, []):
+        return {"status": "erro", "message": "Permissão negada."}
+
     # Ações de Turmas
-    elif acao == "criar_turma":
+    if acao == "criar_turma":
         return turmas.criar_turma(request.get("dados"))
     elif acao == "listar_turmas":
-        if request.get("reset", False):
-            turmas.TURMAS.clear()
-            turmas.proximo_id_turma = 1
         return turmas.listar_turmas(request.get("ordenar_por_id", False))
     elif acao == "atualizar_turma":
         return turmas.atualizar_turma(request.get("id"), request.get("dados"))
@@ -80,10 +101,21 @@ def handle_request(request):
         return listar_atividades_turma(request.get("id_turma"))
     elif acao == "baixar_atividade":
         return baixar_atividade(request.get("id_atividade"))
+    elif acao == "reset_database":
+        return reset_database()
+    # Ações de Relatórios
+    elif acao == "gerar_relatorio_alunos":
+        lista_alunos = listar_alunos()["alunos"]
+        csv_data = relatorios.gerar_relatorio_alunos_csv(lista_alunos)
+        return {"status": "ok", "relatorio": csv_data}
+    elif acao == "gerar_relatorio_turmas":
+        lista_turmas = turmas.listar_turmas()["turmas"]
+        csv_data = relatorios.gerar_relatorio_turmas_csv(lista_turmas)
+        return {"status": "ok", "relatorio": csv_data}
     else:
         return {"status": "erro", "message": "Ação desconhecida"}
 
-def login(request):
+def login(request, session):
     """
     Lida com a requisição de login.
     """
@@ -93,14 +125,30 @@ def login(request):
     resultado = autenticar_usuario(usuario, senha)
     
     if resultado["autenticado"]:
+        session["perfil"] = resultado["perfil"]
         return {"status": "ok", "message": "Login bem-sucedido", "perfil": resultado["perfil"]}
     else:
         return {"status": "erro", "message": "Usuário ou senha inválidos"}
+
+def reset_database():
+    """
+    Limpa todos os dados das tabelas do banco de dados.
+    """
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM turmas")
+    cursor.execute("DELETE FROM alunos")
+    cursor.execute("DELETE FROM aulas")
+    cursor.execute("DELETE FROM atividades")
+    conn.commit()
+    conn.close()
+    return {"status": "ok", "message": "Banco de dados resetado com sucesso."}
 
 def main():
     """
     Função principal para iniciar o servidor.
     """
+    database.init_db() # Inicializa o banco de dados
     host = "0.0.0.0"  # Escuta em todas as interfaces de rede
     port = 9998
 

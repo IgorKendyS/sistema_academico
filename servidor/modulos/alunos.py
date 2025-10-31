@@ -1,87 +1,89 @@
-# Lista para armazenar os alunos em memória
-ALUNOS = []
-
-# Contador para gerar IDs únicos para os alunos
-proximo_id_aluno = 1
+from .. import database
 
 def criar_aluno(dados_aluno):
     """
-    Cria um novo aluno e o adiciona à lista de alunos.
-
-    Args:
-        dados_aluno (dict): Dicionário com os dados do aluno (nome, matricula, etc.).
-
-    Returns:
-        dict: Dicionário com o status da operação e os dados do aluno criado.
+    Cria um novo aluno e o insere no banco de dados.
     """
-    global proximo_id_aluno
-    
-    novo_aluno = {
-        "id": proximo_id_aluno,
-        "nome": dados_aluno.get("nome"),
-        "matricula": dados_aluno.get("matricula")
-    }
-    
-    ALUNOS.append(novo_aluno)
-    proximo_id_aluno += 1
-    
-    return {"status": "ok", "aluno": novo_aluno}
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("INSERT INTO alunos (nome, matricula) VALUES (?, ?)", 
+                       (dados_aluno.get("nome"), dados_aluno.get("matricula")))
+        conn.commit()
+        novo_id = cursor.lastrowid
+        conn.close()
+        
+        novo_aluno = {
+            "id": novo_id,
+            "nome": dados_aluno.get("nome"),
+            "matricula": dados_aluno.get("matricula")
+        }
+        
+        return {"status": "ok", "aluno": novo_aluno}
+    except database.sqlite3.IntegrityError:
+        conn.close()
+        return {"status": "erro", "message": "Matrícula já existe."}
 
 def listar_alunos():
     """
-    Retorna a lista de todos os alunos cadastrados.
-
-    Returns:
-        dict: Dicionário com o status da operação e a lista de alunos.
+    Retorna a lista de todos os alunos cadastrados no banco de dados.
     """
-    return {"status": "ok", "alunos": ALUNOS}
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM alunos")
+    alunos_db = cursor.fetchall()
+    conn.close()
+
+    alunos = [dict(row) for row in alunos_db]
+    return {"status": "ok", "alunos": alunos}
 
 def buscar_aluno(id_aluno):
     """
-    Busca um aluno pelo seu ID.
-
-    Args:
-        id_aluno (int): ID do aluno a ser buscado.
-
-    Returns:
-        dict or None: Dicionário com os dados do aluno se encontrado, senão None.
+    Busca um aluno pelo seu ID no banco de dados.
     """
-    for aluno in ALUNOS:
-        if aluno["id"] == id_aluno:
-            return aluno
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM alunos WHERE id = ?", (id_aluno,))
+    aluno_db = cursor.fetchone()
+    conn.close()
+    
+    if aluno_db:
+        return dict(aluno_db)
     return None
 
 def atualizar_aluno(id_aluno, dados_aluno):
     """
-    Atualiza os dados de um aluno.
-
-    Args:
-        id_aluno (int): ID do aluno a ser atualizado.
-        dados_aluno (dict): Dicionário com os novos dados do aluno.
-
-    Returns:
-        dict: Dicionário com o status da operação.
+    Atualiza os dados de um aluno no banco de dados.
     """
-    aluno = buscar_aluno(id_aluno)
-    if aluno:
-        aluno.update(dados_aluno)
-        return {"status": "ok", "message": "Aluno atualizado com sucesso."}
-    else:
-        return {"status": "erro", "message": "Aluno não encontrado."}
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("UPDATE alunos SET nome = ?, matricula = ? WHERE id = ?", 
+                       (dados_aluno.get("nome"), dados_aluno.get("matricula"), id_aluno))
+        conn.commit()
+        updated_rows = cursor.rowcount
+        conn.close()
+        
+        if updated_rows > 0:
+            return {"status": "ok", "message": "Aluno atualizado com sucesso."}
+        else:
+            return {"status": "erro", "message": "Aluno não encontrado."}
+    except database.sqlite3.IntegrityError:
+        conn.close()
+        return {"status": "erro", "message": "Matrícula já existe."}
 
 def remover_aluno(id_aluno):
     """
-    Remove um aluno da lista.
-
-    Args:
-        id_aluno (int): ID do aluno a ser removido.
-
-    Returns:
-        dict: Dicionário com o status da operação.
+    Remove um aluno do banco de dados.
     """
-    aluno = buscar_aluno(id_aluno)
-    if aluno:
-        ALUNOS.remove(aluno)
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM alunos WHERE id = ?", (id_aluno,))
+    conn.commit()
+    deleted_rows = cursor.rowcount
+    conn.close()
+    
+    if deleted_rows > 0:
         return {"status": "ok", "message": "Aluno removido com sucesso."}
     else:
         return {"status": "erro", "message": "Aluno não encontrado."}

@@ -1,57 +1,51 @@
-# Lista para armazenar as atividades em memória
-ATIVIDADES = []
-
-# Contador para gerar IDs únicos para as atividades
-proximo_id_atividade = 1
+from .. import database
 
 def enviar_atividade(dados_atividade):
     """
-    Envia uma nova atividade e a adiciona à lista de atividades.
-
-    Args:
-        dados_atividade (dict): Dicionário com os dados da atividade (id_turma, nome, etc.).
-
-    Returns:
-        dict: Dicionário com o status da operação e os dados da atividade enviada.
+    Envia uma nova atividade e a insere no banco de dados.
     """
-    global proximo_id_atividade
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO atividades (id_turma, titulo, descricao, arquivo) VALUES (?, ?, ?, ?)", 
+                   (dados_atividade.get("id_turma"), dados_atividade.get("titulo"), 
+                    dados_atividade.get("descricao"), dados_atividade.get("arquivo")))
+    conn.commit()
+    novo_id = cursor.lastrowid
+    conn.close()
     
     nova_atividade = {
-        "id": proximo_id_atividade,
+        "id": novo_id,
         "id_turma": dados_atividade.get("id_turma"),
-        "nome": dados_atividade.get("nome"),
-        "conteudo": dados_atividade.get("conteudo")
+        "titulo": dados_atividade.get("titulo"),
+        "descricao": dados_atividade.get("descricao")
     }
-    
-    ATIVIDADES.append(nova_atividade)
-    proximo_id_atividade += 1
     
     return {"status": "ok", "atividade": nova_atividade}
 
 def listar_atividades_turma(id_turma):
     """
     Retorna a lista de todas as atividades de uma determinada turma.
-
-    Args:
-        id_turma (int): ID da turma.
-
-    Returns:
-        dict: Dicionário com o status da operação e a lista de atividades.
     """
-    atividades_turma = [atividade for atividade in ATIVIDADES if atividade["id_turma"] == id_turma]
-    return {"status": "ok", "atividades": atividades_turma}
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, id_turma, titulo, descricao FROM atividades WHERE id_turma = ?", (id_turma,))
+    atividades_db = cursor.fetchall()
+    conn.close()
+
+    atividades = [dict(row) for row in atividades_db]
+    return {"status": "ok", "atividades": atividades}
 
 def baixar_atividade(id_atividade):
     """
     Retorna o conteúdo de uma atividade.
-
-    Args:
-        id_atividade (int): ID da atividade.
-
-    Returns:
-        dict: Dicionário com o status da operação e o conteúdo da atividade.
     """
-    for atividade in ATIVIDADES:
-        if atividade["id"] == id_atividade:
-            return {"status": "ok", "conteudo": atividade["conteudo"]}
-    return {"status": "erro", "message": "Atividade não encontrada."}
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT arquivo FROM atividades WHERE id = ?", (id_atividade,))
+    atividade_db = cursor.fetchone()
+    conn.close()
+    
+    if atividade_db and atividade_db["arquivo"]:
+        return {"status": "ok", "arquivo": atividade_db["arquivo"]}
+    else:
+        return {"status": "erro", "message": "Atividade não encontrada ou sem arquivo."}
