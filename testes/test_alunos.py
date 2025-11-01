@@ -50,5 +50,30 @@ def test_listar_alunos(mock_db):
     assert resultado["alunos"][0]["nome"] == "Aluno A"
     mock_db.execute.assert_called_once_with("SELECT * FROM alunos")
 
+def test_buscar_aluno_existente(mock_db):
+    """
+    Testa a busca de um aluno existente utilizando o módulo em C para busca binária.
+    """
+    mock_db.fetchall.return_value = [{"id": 1}, {"id": 2}]
+    mock_db.fetchone.return_value = {"id": 2, "nome": "Aluno B", "matricula": "222"}
+
+    resultado = alunos.buscar_aluno(2)
+
+    # Primeiro SELECT busca os IDs, o segundo traz os dados completos
+    assert mock_db.execute.call_args_list[0][0][0] == "SELECT id FROM alunos"
+    assert mock_db.execute.call_args_list[1][0][0] == "SELECT * FROM alunos WHERE id = ?"
+    assert resultado["nome"] == "Aluno B"
+
+def test_buscar_aluno_inexistente(mock_db):
+    """
+    Testa a busca de um aluno inexistente.
+    """
+    mock_db.fetchall.return_value = [{"id": 1}, {"id": 2}]
+
+    resultado = alunos.buscar_aluno(5)
+
+    # Apenas a consulta de IDs é realizada, pois a busca retorna -1
+    mock_db.execute.assert_called_once_with("SELECT id FROM alunos")
+    assert resultado is None
 
 

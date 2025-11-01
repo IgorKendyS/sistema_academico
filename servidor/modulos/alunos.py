@@ -1,4 +1,5 @@
 from .. import database
+from .ordenacao import binary_search, sort_int_array
 
 def criar_aluno(dados_aluno):
     """
@@ -43,6 +44,16 @@ def buscar_aluno(id_aluno):
     """
     conn = database.get_db_connection()
     cursor = conn.cursor()
+    cursor.execute("SELECT id FROM alunos")
+    ids_db = cursor.fetchall()
+
+    ids = [row["id"] for row in ids_db]
+    sorted_ids = sort_int_array(ids) if ids else []
+
+    if binary_search(sorted_ids, id_aluno) == -1:
+        conn.close()
+        return None
+
     cursor.execute("SELECT * FROM alunos WHERE id = ?", (id_aluno,))
     aluno_db = cursor.fetchone()
     conn.close()
