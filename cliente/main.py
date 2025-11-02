@@ -151,14 +151,119 @@ def menu_administrador(conexao: ClientConnection):
     """
     while True:
         print("\n--- Menu do Administrador ---")
+        print("1. Gerenciar Alunos")
+        print("2. Gerenciar Atividades")
+        print("3. Gerenciar Aulas")
+        print("4. Gerenciar Turmas")
+        print("5. Gerenciar Usuários")
+        print("6. Resetar Banco de Dados")
+        print("7. Sair")
+        opcao = input("Escolha uma opção: ")
+
+        if opcao == "1":
+            menu_gerenciar_alunos(conexao)
+        elif opcao == "2":
+            menu_gerenciar_atividades(conexao)
+        elif opcao == "3":
+            menu_gerenciar_aulas(conexao)
+        elif opcao == "4":
+            menu_gerenciar_turmas(conexao)
+        elif opcao == "5":
+            menu_gerenciar_usuarios(conexao)
+        elif opcao == "6":
+            resetar_banco_de_dados(conexao)
+        elif opcao == "7":
+            break
+        else:
+            print("Opção inválida.")
+
+
+def menu_gerenciar_alunos(conexao: ClientConnection):
+    """
+    Exibe o menu de gerenciamento de alunos.
+    """
+    while True:
+        print("\n--- Gerenciar Alunos ---")
+        print("0. Voltar")
+        print("1. Criar Aluno")
+        print("2. Listar Alunos")
+        print("3. Remover Aluno")
+        print("4. Gerar Relatório de Alunos (CSV)")
+        opcao = input("Escolha uma opção: ")
+
+        if opcao == "0":
+            break
+        elif opcao == "1":
+            criar_aluno(conexao)
+        elif opcao == "2":
+            listar_alunos(conexao)
+        elif opcao == "3":
+            remover_aluno(conexao)
+        elif opcao == "4":
+            gerar_relatorio_alunos(conexao)
+        else:
+            print("Opção inválida.")
+
+
+def menu_gerenciar_atividades(conexao: ClientConnection):
+    """
+    Exibe o menu de gerenciamento de atividades.
+    """
+    while True:
+        print("\n--- Gerenciar Atividades ---")
+        print("0. Voltar")
+        print("1. Enviar Atividade")
+        print("2. Listar Atividades de uma Turma")
+        print("3. Remover Atividade")
+        opcao = input("Escolha uma opção: ")
+
+        if opcao == "0":
+            break
+        elif opcao == "1":
+            enviar_atividade(conexao)
+        elif opcao == "2":
+            listar_atividades_turma(conexao)
+        elif opcao == "3":
+            remover_atividade(conexao)
+        else:
+            print("Opção inválida.")
+
+
+def menu_gerenciar_aulas(conexao: ClientConnection):
+    """
+    Exibe o menu de gerenciamento de aulas.
+    """
+    while True:
+        print("\n--- Gerenciar Aulas ---")
+        print("0. Voltar")
+        print("1. Registrar Aula")
+        print("2. Listar Aulas de uma Turma")
+        print("3. Remover Aula")
+        opcao = input("Escolha uma opção: ")
+
+        if opcao == "0":
+            break
+        elif opcao == "1":
+            registrar_aula(conexao)
+        elif opcao == "2":
+            listar_aulas_turma(conexao)
+        elif opcao == "3":
+            remover_aula(conexao)
+        else:
+            print("Opção inválida.")
+
+
+def menu_gerenciar_turmas(conexao: ClientConnection):
+    """
+    Exibe o menu de gerenciamento de turmas.
+    """
+    while True:
+        print("\n--- Gerenciar Turmas ---")
         print("0. Voltar")
         print("1. Criar Turma")
         print("2. Listar Turmas")
         print("3. Remover Turma")
-        print("4. Resetar Banco de Dados")
-        print("5. Gerar Relatório de Turmas (CSV)")
-        print("6. Gerar Relatório de Alunos (CSV)")
-        print("7. Sair")
+        print("4. Gerar Relatório de Turmas (CSV)")
         opcao = input("Escolha uma opção: ")
 
         if opcao == "0":
@@ -170,13 +275,31 @@ def menu_administrador(conexao: ClientConnection):
         elif opcao == "3":
             remover_turma(conexao)
         elif opcao == "4":
-            resetar_banco_de_dados(conexao)
-        elif opcao == "5":
             gerar_relatorio_turmas(conexao)
-        elif opcao == "6":
-            gerar_relatorio_alunos(conexao)
-        elif opcao == "7":
+        else:
+            print("Opção inválida.")
+
+
+def menu_gerenciar_usuarios(conexao: ClientConnection):
+    """
+    Exibe o menu de gerenciamento de usuários.
+    """
+    while True:
+        print("\n--- Gerenciar Usuários ---")
+        print("0. Voltar")
+        print("1. Criar Usuário")
+        print("2. Listar Usuários")
+        print("3. Remover Usuário")
+        opcao = input("Escolha uma opção: ")
+
+        if opcao == "0":
             break
+        elif opcao == "1":
+            criar_usuario(conexao)
+        elif opcao == "2":
+            listar_usuarios(conexao)
+        elif opcao == "3":
+            remover_usuario(conexao)
         else:
             print("Opção inválida.")
 
@@ -187,7 +310,6 @@ def menu_professor(conexao: ClientConnection):
     """
     while True:
         print("\n--- Menu do Professor ---")
-        print("0. Voltar")
         print("1. Listar Alunos")
         print("2. Criar Aluno")
         print("3. Registrar Aula")
@@ -198,9 +320,8 @@ def menu_professor(conexao: ClientConnection):
         print("8. Sair")
         opcao = input("Escolha uma opção: ")
 
-        if opcao == "0":
-            break
-        elif opcao == "1":
+        
+        if  opcao == "1":
             listar_alunos(conexao)
         elif opcao == "2":
             criar_aluno(conexao)
@@ -226,17 +347,14 @@ def menu_aluno(conexao: ClientConnection):
     """
     while True:
         print("\n--- Menu do Aluno ---")
-        print("0. Voltar")
         print("1. Listar Turmas")
         print("2. Listar Aulas de uma Turma")
         print("3. Listar Atividades de uma Turma")
         print("4. Baixar Atividade")
         print("5. Sair")
         opcao = input("Escolha uma opção: ")
-
-        if opcao == "0":
-            break
-        elif opcao == "1":
+       
+        if opcao == "1":
             listar_turmas(conexao)
         elif opcao == "2":
             listar_aulas_turma(conexao)
@@ -338,6 +456,18 @@ def criar_aluno(conexao: ClientConnection):
         print(f"Erro ao criar aluno: {resposta.get('message')}")
 
 
+def remover_aluno(conexao: ClientConnection):
+    id_aluno = prompt_int("ID do aluno a ser removido (Enter para voltar): ")
+    if id_aluno is None:
+        return
+
+    resposta = conexao.send_request({"acao": "remover_aluno", "id": id_aluno})
+    if resposta.get("status") == "ok":
+        print("Aluno removido com sucesso!")
+    else:
+        print(f"Erro ao remover aluno: {resposta.get('message')}")
+
+
 def registrar_aula(conexao: ClientConnection):
     id_turma = prompt_int("ID da turma (Enter para voltar): ")
     if id_turma is None:
@@ -361,6 +491,18 @@ def registrar_aula(conexao: ClientConnection):
         print("Aula registrada com sucesso!")
     else:
         print(f"Erro ao registrar aula: {resposta.get('message')}")
+
+
+def remover_aula(conexao: ClientConnection):
+    id_aula = prompt_int("ID da aula a ser removida (Enter para voltar): ")
+    if id_aula is None:
+        return
+
+    resposta = conexao.send_request({"acao": "remover_aula", "id": id_aula})
+    if resposta.get("status") == "ok":
+        print("Aula removida com sucesso!")
+    else:
+        print(f"Erro ao remover aula: {resposta.get('message')}")
 
 
 def listar_aulas_turma(conexao: ClientConnection):
@@ -410,6 +552,18 @@ def enviar_atividade(conexao: ClientConnection):
         print("Atividade enviada com sucesso!")
     else:
         print(f"Erro ao enviar atividade: {resposta.get('message')}")
+
+
+def remover_atividade(conexao: ClientConnection):
+    id_atividade = prompt_int("ID da atividade a ser removida (Enter para voltar): ")
+    if id_atividade is None:
+        return
+
+    resposta = conexao.send_request({"acao": "remover_atividade", "id": id_atividade})
+    if resposta.get("status") == "ok":
+        print("Atividade removida com sucesso!")
+    else:
+        print(f"Erro ao remover atividade: {resposta.get('message')}")
 
 
 def listar_atividades_turma(conexao: ClientConnection):
@@ -483,6 +637,53 @@ def _salvar_ou_exibir_relatorio(nome_padrao: str, conteudo: Optional[str]):
     else:
         print("\n--- Relatório ---")
         print(conteudo)
+
+
+def criar_usuario(conexao: ClientConnection):
+    nome = prompt_text("Nome do usuário (Enter para voltar): ")
+    if nome is None:
+        return
+    senha = prompt_text("Senha do usuário (Enter para voltar): ")
+    if senha is None:
+        return
+    perfil = prompt_text("Perfil do usuário (administrador, professor, aluno) (Enter para voltar): ")
+    if perfil is None:
+        return
+
+    resposta = conexao.send_request(
+        {"acao": "criar_usuario", "dados": {"usuario": nome, "senha": senha, "perfil": perfil}}
+    )
+    if resposta.get("status") == "ok":
+        print("Usuário criado com sucesso!")
+    else:
+        print(f"Erro ao criar usuário: {resposta.get('message')}")
+
+
+def listar_usuarios(conexao: ClientConnection):
+    resposta = conexao.send_request({"acao": "listar_usuarios"})
+    if resposta.get("status") == "ok":
+        usuarios = resposta.get("usuarios", [])
+        if not usuarios:
+            print("Nenhum usuário cadastrado.")
+        else:
+            for usuario in usuarios:
+                print(
+                    f"ID: {usuario['id']}, Usuário: {usuario['usuario']}, Perfil: {usuario['perfil']}"
+                )
+    else:
+        print(f"Erro ao listar usuários: {resposta.get('message')}")
+
+
+def remover_usuario(conexao: ClientConnection):
+    id_usuario = prompt_int("ID do usuário a ser removido (Enter para voltar): ")
+    if id_usuario is None:
+        return
+
+    resposta = conexao.send_request({"acao": "remover_usuario", "id": id_usuario})
+    if resposta.get("status") == "ok":
+        print("Usuário removido com sucesso!")
+    else:
+        print(f"Erro ao remover usuário: {resposta.get('message')}")
 
 
 if __name__ == "__main__":

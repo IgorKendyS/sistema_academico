@@ -2,16 +2,18 @@ import socket
 import threading
 import json
 import time
-from .modulos.usuarios import autenticar_usuario
+from .modulos.usuarios import (
+    autenticar_usuario, criar_usuario, listar_usuarios, remover_usuario
+)
 from .modulos import turmas
 from .modulos.alunos import (
     criar_aluno, listar_alunos, atualizar_aluno, remover_aluno
 )
 from .modulos.aulas import (
-    registrar_aula, listar_aulas_turma
+    registrar_aula, listar_aulas_turma, remover_aula
 )
 from .modulos.atividades import (
-    enviar_atividade, listar_atividades_turma, baixar_atividade
+    enviar_atividade, listar_atividades_turma, baixar_atividade, remover_atividade
 )
 from .modulos import relatorios
 from . import database
@@ -94,6 +96,8 @@ def handle_request(request, session):
         return registrar_aula(request.get("dados"))
     elif acao == "listar_aulas_turma":
         return listar_aulas_turma(request.get("id_turma"))
+    elif acao == "remover_aula":
+        return remover_aula(request.get("id"))
     # Ações de Atividades
     elif acao == "enviar_atividade":
         return enviar_atividade(request.get("dados"))
@@ -101,6 +105,15 @@ def handle_request(request, session):
         return listar_atividades_turma(request.get("id_turma"))
     elif acao == "baixar_atividade":
         return baixar_atividade(request.get("id_atividade"))
+    elif acao == "remover_atividade":
+        return remover_atividade(request.get("id"))
+    # Ações de Usuários
+    elif acao == "criar_usuario":
+        return criar_usuario(request.get("dados"))
+    elif acao == "listar_usuarios":
+        return listar_usuarios()
+    elif acao == "remover_usuario":
+        return remover_usuario(request.get("id"))
     elif acao == "reset_database":
         return reset_database()
     # Ações de Relatórios

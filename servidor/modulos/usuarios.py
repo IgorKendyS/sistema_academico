@@ -38,3 +38,41 @@ def autenticar_usuario(usuario, senha):
         return {"autenticado": True, "perfil": user_db["perfil"]}
 
     return {"autenticado": False, "perfil": None}
+
+def criar_usuario(dados_usuario):
+    """
+    Cria um novo usuário no banco de dados.
+    """
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO usuarios (usuario, senha, perfil) VALUES (?, ?, ?)", 
+                   (dados_usuario.get("usuario"), hash_password(dados_usuario.get("senha")),
+                    dados_usuario.get("perfil")))
+    conn.commit()
+    conn.close()
+    return {"status": "ok", "message": "Usuário criado com sucesso."}
+
+def listar_usuarios():
+    """
+    Retorna a lista de todos os usuários.
+    """
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, usuario, perfil FROM usuarios")
+    usuarios_db = cursor.fetchall()
+    conn.close()
+
+    usuarios = [dict(row) for row in usuarios_db]
+    return {"status": "ok", "usuarios": usuarios}
+
+
+def remover_usuario(id_usuario):
+    """
+    Remove um usuário do banco de dados.
+    """
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM usuarios WHERE id = ?", (id_usuario,))
+    conn.commit()
+    conn.close()
+    return {"status": "ok", "message": "Usuário removido com sucesso."}

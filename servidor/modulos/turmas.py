@@ -75,10 +75,23 @@ def atualizar_turma(id_turma, dados_turma):
 
 def remover_turma(id_turma):
     """
-    Remove uma turma do banco de dados.
+    Remove uma turma do banco de dados, se não houver aulas ou atividades associadas.
     """
     conn = database.get_db_connection()
     cursor = conn.cursor()
+
+    # Verificar se há aulas associadas
+    cursor.execute("SELECT COUNT(*) FROM aulas WHERE id_turma = ?", (id_turma,))
+    if cursor.fetchone()[0] > 0:
+        conn.close()
+        return {"status": "erro", "message": "Não é possível remover a turma, pois há aulas associadas."}
+
+    # Verificar se há atividades associadas
+    cursor.execute("SELECT COUNT(*) FROM atividades WHERE id_turma = ?", (id_turma,))
+    if cursor.fetchone()[0] > 0:
+        conn.close()
+        return {"status": "erro", "message": "Não é possível remover a turma, pois há atividades associadas."}
+
     cursor.execute("DELETE FROM turmas WHERE id = ?", (id_turma,))
     conn.commit()
     deleted_rows = cursor.rowcount

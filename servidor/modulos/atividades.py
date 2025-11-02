@@ -49,3 +49,14 @@ def baixar_atividade(id_atividade):
         return {"status": "ok", "arquivo": atividade_db["arquivo"]}
     else:
         return {"status": "erro", "message": "Atividade não encontrada ou sem arquivo."}
+
+def remover_atividade(id_atividade):
+    """
+    Remove uma atividade do banco de dados.
+    """
+    conn = database.get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM atividades WHERE id = ?", (id_atividade,))
+    conn.commit()
+    conn.close()
+    return {"status": "ok", "message": "Atividade removida com sucesso."}
