@@ -1,4 +1,4 @@
-Perfeito 👍 Igor — com base na descrição do projeto, aqui está um **checklist completo e detalhado**, dividido por **etapas de desenvolvimento**, com **observações técnicas e recomendações práticas** para garantir que o sistema atenda a todos os objetivos acadêmicos, de rede e de implementação.
+C base na descrição do projeto, aqui está um **checklist completo e detalhado**, dividido por **etapas de desenvolvimento**, com **observações técnicas e recomendações práticas** para garantir que o sistema atenda a todos os objetivos acadêmicos, de rede e de implementação.
 
 ---
 
